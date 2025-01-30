@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Cricket Scores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            color: #61dafb;
+        }
+        .match-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .match-card {
+            background: #20232a;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        .team {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .team img {
+            width: 40px;
+            height: 40px;
+        }
+        .status {
+            font-weight: bold;
+            color: #61dafb;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Live Cricket Scores</h2>
+    <div class="match-container" id="matchContainer">
+        <p>Loading matches...</p>
+    </div>
+
+    <script>
+        const API_URL = "https://api.cricapi.com/v1/cricScore?apikey=c1dda4dc-2c05-4057-a558-9d322530f0bc";
+
+        async function fetchLiveScores() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                if (!data || !data.data) {
+                    throw new Error("No match data found");
+                }
+
+                const matches = data.data.filter(match => match.status.includes("live") || match.status.includes("Match not started"));
+                const matchContainer = document.getElementById("matchContainer");
+
+                matchContainer.innerHTML = ""; // Old data clear karein
+
+                matches.forEach(match => {
+                    const matchCard = document.createElement("div");
+                    matchCard.classList.add("match-card");
+
+                    matchCard.innerHTML = `
+                        <div class="team">
+                            <img src="${match.t1img}" alt="${match.t1}">
+                            <span>${match.t1}</span>
+                        </div>
+                        <div class="team">
+                            <img src="${match.t2img}" alt="${match.t2}">
+                            <span>${match.t2}</span>
+                        </div>
+                        <p class="status">${match.status}</p>
+                        <p><strong>${match.t1s || "N/A"}</strong> vs <strong>${match.t2s || "N/A"}</strong></p>
+                        <p>Series: ${match.series}</p>
+                    `;
+
+                    matchContainer.appendChild(matchCard);
+                });
+            } catch (error) {
+                document.getElementById("matchContainer").innerHTML = "<p>Error fetching data. Please try again later.</p>";
+                console.error("Error:", error);
+            }
+        }
+
+        fetchLiveScores(); // Initial fetch
+        setInterval(fetchLiveScores, 30000); // Auto-refresh har 30 second me
+    </script>
+
+</body>
+</html>
